@@ -1,7 +1,6 @@
 #include "GameScene.h"
-#include "math.h"
 #include "StageManager.h"
-
+#include "math.h"
 
 using namespace KamataEngine;
 
@@ -62,10 +61,31 @@ void GameScene::GenerateFieldObjects() {
 					break;
 				}
 
+				// ==============================
+				// Playerのモデルをまとめる
+				// ==============================
+				PlayerModels playerModels{};
+
+				playerModels.body = playerBodyModel_;
+				playerModels.head = playerHeadModel_;
+
+				playerModels.leftHand = playerLeftHandModel_;
+				playerModels.rightHand = playerRightHandModel_;
+
+				playerModels.leftFoot = playerLeftFootModel_;
+				playerModels.rightFoot = playerRightFootModel_;
+
+				playerModels.weapon = playerWeaponModel_;
+
+				// ==============================
+				// Player生成
+				// ==============================
 				player_ = new Player();
 
-				player_->Initialize(playerModel_, attackModel_, &camera_, position);
+				// 7パーツモデルを渡して初期化
+				player_->Initialize(playerModels, attackModel_, &camera_, position);
 
+				// マップチップフィールドを設定
 				player_->SetMapChipField(mapChipField_);
 
 				isPlayerCreated = true;
@@ -148,14 +168,11 @@ void GameScene::Initialize(StageManager* stageManager) {
 	// リロード要求を解除
 	reloadRequested_ = false;
 
-
 	// ======================
 	// テクスチャ読み込み
 	// ======================
 	// 描画前にGPUにテクスチャを登録しておく必要がある
 	textureHandle_ = TextureManager::Load("./Resources/uvChecker.png");
-		
-	
 
 	// ======================
 	// モデル生成
@@ -164,6 +181,32 @@ void GameScene::Initialize(StageManager* stageManager) {
 	modelBlock_ = Model::CreateFromOBJ("block", true);
 	modelSkydome_ = Model::CreateFromOBJ("skydome", true);
 	playerModel_ = Model::CreateFromOBJ("player", true);
+
+	// ==============================
+	// Player分割パーツモデル読み込み
+	// ==============================
+
+	// 胴体
+	playerBodyModel_ = Model::CreateFromOBJ("Body", true);
+
+	// 頭
+	playerHeadModel_ = Model::CreateFromOBJ("Head", true);
+
+	// 左手
+	playerLeftHandModel_ = Model::CreateFromOBJ("LeftHand", true);
+
+	// 右手
+	playerRightHandModel_ = Model::CreateFromOBJ("RightHand", true);
+
+	// 左足
+	playerLeftFootModel_ = Model::CreateFromOBJ("LeftFoot", true);
+
+	// 右足
+	playerRightFootModel_ = Model::CreateFromOBJ("RightFoot", true);
+
+	// 武器
+	playerWeaponModel_ = Model::CreateFromOBJ("Weapon", true);
+
 	attackModel_ = Model::CreateFromOBJ("hit_effect", true);
 	enemyModel_ = Model::CreateFromOBJ("enemy", true);
 	shieldEnemyModel_ = Model::CreateFromOBJ("shieldEnemy", true);
@@ -201,7 +244,6 @@ void GameScene::Initialize(StageManager* stageManager) {
 	// ======================
 	deathParticles_ = new DeathParticles();
 	deathParticles_->Initialize(deathParticlesModel_, &camera_, player_->GetWorldPosition());
-
 
 	// ======================
 	// ヒットエフェクト生成
@@ -250,8 +292,6 @@ void GameScene::Initialize(StageManager* stageManager) {
 	finished_ = false;
 
 	fade_->Start(Fade::Status::FadeIn, kFadeDuration);
-
-
 }
 
 // ======================
@@ -261,13 +301,13 @@ GameScene::~GameScene() {
 
 	// モデル解放
 	delete model_;
-	delete modelBlock_; 
+	delete modelBlock_;
 	delete modelSkydome_;
 
 	// プレイヤー解放
 	delete player_;
 
-	//敵解放
+	// 敵解放
 	for (BaseEnemy* enemy : enemies_) {
 		delete enemy;
 	}
@@ -287,7 +327,7 @@ GameScene::~GameScene() {
 	// ======================
 	for (auto& line : worldTransformBlocks_) {
 		for (auto& wt : line) {
-			delete wt; 
+			delete wt;
 			wt = nullptr;
 		}
 	}
@@ -303,7 +343,25 @@ GameScene::~GameScene() {
 	delete fade_;
 	fade_ = nullptr;
 
+	// 従来のプレイヤーモデル
 	delete playerModel_;
+
+	// ==============================
+	// Player分割パーツモデル解放
+	// ==============================
+
+	delete playerBodyModel_;
+	delete playerHeadModel_;
+
+	delete playerLeftHandModel_;
+	delete playerRightHandModel_;
+
+	delete playerLeftFootModel_;
+	delete playerRightFootModel_;
+
+	delete playerWeaponModel_;
+
+	// 従来のモデル解放処理
 	delete attackModel_;
 	delete enemyModel_;
 	delete shieldEnemyModel_;
@@ -329,7 +387,7 @@ void GameScene::Update() {
 
 	switch (phase_) {
 
-case Phase::kFadeIn:
+	case Phase::kFadeIn:
 
 		// スカイドーム更新
 		skydome_->Update();
@@ -346,7 +404,6 @@ case Phase::kFadeIn:
 		for (BaseEffect* effect : effects_) {
 			effect->Update();
 		}
-
 
 		// ブロックのワールド行列更新
 		for (auto& line : worldTransformBlocks_) {
@@ -371,62 +428,78 @@ case Phase::kFadeIn:
 
 	case Phase::kPlay:
 
-	// スカイドーム更新
-	skydome_->Update();
+		// スカイドーム更新
+		skydome_->Update();
 
-	// プレイヤー更新
-	player_->Update();
+		// プレイヤー更新
+		player_->Update();
 
-	// 敵更新
-	for (BaseEnemy* enemy : enemies_) {
-		enemy->Update();
-	}
+		// 敵更新
+		for (BaseEnemy* enemy : enemies_) {
+			enemy->Update();
+		}
 
-	// カメラ更新
-	cameraController_->Update();
-	camera_.UpdateMatrix();
+		// カメラ更新
+		cameraController_->Update();
+		camera_.UpdateMatrix();
 
-	// ブロック更新
-	for (auto& line : worldTransformBlocks_) {
-		for (auto& wt : line) {
+		#ifdef USE_IMGUI
 
-			if (!wt) {
-				continue;
+		// カメラ調整用ImGui
+		if (cameraController_) {
+			cameraController_->DrawImGui();
+		}
+
+		// ==============================
+		// Playerパーツ調整用ImGui
+		// ==============================
+		if (player_) {
+			player_->DrawPartsImGui();
+		}
+
+#endif
+
+		// ブロック更新
+		for (auto& line : worldTransformBlocks_) {
+			for (auto& wt : line) {
+
+				if (!wt) {
+					continue;
+				}
+
+				UpdateWorldTransform(*wt);
+			}
+		}
+
+		// すべての当たり判定
+		CheckAllCollisions();
+
+		// エフェクト更新
+		for (BaseEffect* effect : effects_) {
+			effect->Update();
+		}
+
+		// 終了したエフェクトを削除
+		effects_.remove_if([](BaseEffect* effect) {
+			if (effect->IsDead()) {
+				delete effect;
+				return true;
 			}
 
-			UpdateWorldTransform(*wt);
-		}
-	}
+			return false;
+		});
 
-	// すべての当たり判定
-	CheckAllCollisions();
+		// 死亡した敵を削除
+		enemies_.remove_if([](BaseEnemy* enemy) {
+			if (enemy->IsDead()) {
+				delete enemy;
+				return true;
+			}
 
-	// エフェクト更新
-	for (BaseEffect* effect : effects_) {
-		effect->Update();
-	}
+			return false;
+		});
 
-	// 終了したエフェクトを削除
-	effects_.remove_if([](BaseEffect* effect) {
-		if (effect->IsDead()) {
-			delete effect;
-			return true;
-		}
-
-		return false;
-	});
-
-	// 死亡した敵を削除
-	enemies_.remove_if([](BaseEnemy* enemy) {
-		if (enemy->IsDead()) {
-			delete enemy;
-			return true;
-		}
-
-		return false;
-	});
-
-	break;
+		break;
 
 	case Phase::kDeath:
 
@@ -469,28 +542,27 @@ case Phase::kFadeIn:
 	}
 
 #ifdef _DEBUG
-	// ====================== 
-	// デバッグカメラ切り替え 
+	// ======================
+	// デバッグカメラ切り替え
 	// ======================
 	if (Input::GetInstance()->TriggerKey(DIK_F1)) {
 		isDebugCameraActive_ = !isDebugCameraActive_;
 	}
 #endif
 
-// ====================== 
-// カメラ適用 
-// ======================
-if (isDebugCameraActive_) {
-	debugCamera_->Update();
-	camera_.matView = debugCamera_->GetCamera().matView;
-	camera_.matProjection = debugCamera_->GetCamera().matProjection;
-	camera_.TransferMatrix();
+	// ======================
+	// カメラ適用
+	// ======================
+	if (isDebugCameraActive_) {
+		debugCamera_->Update();
+		camera_.matView = debugCamera_->GetCamera().matView;
+		camera_.matProjection = debugCamera_->GetCamera().matProjection;
+		camera_.TransferMatrix();
 	} else {
-	camera_.UpdateMatrix();
+		camera_.UpdateMatrix();
 	}
 
-
-	#ifdef _DEBUG
+#ifdef _DEBUG
 
 	ImGui::Begin("GameScene");
 
@@ -500,9 +572,8 @@ if (isDebugCameraActive_) {
 
 	ImGui::End();
 
-	#endif
+#endif
 }
-
 
 // ======================
 // 描画処理
@@ -519,13 +590,12 @@ void GameScene::Draw() {
 		for (auto& wt : line) {
 			if (!wt)
 				continue;
-				
+
 			modelBlock_->Draw(*wt, camera_);
 		}
 	}
 
-
-	//スカイドーム描画
+	// スカイドーム描画
 	skydome_->Draw();
 
 	for (BaseEnemy* enemy : enemies_) {
@@ -539,7 +609,6 @@ void GameScene::Draw() {
 
 	player_->Draw();
 
-
 	// やあられパーティクル描画
 	if (deathParticles_) {
 		deathParticles_->Draw();
@@ -551,25 +620,24 @@ void GameScene::Draw() {
 	Model::PostDraw();
 }
 
-
 void GameScene::CheckAllCollisions() {
 
- AABB playerAABB = player_->GetAABB();
+	AABB playerAABB = player_->GetAABB();
 
-	//自キャラと敵弾全ての当たり判定
+	// 自キャラと敵弾全ての当たり判定
 	for (BaseEnemy* enemy : enemies_) {
 
 		if (enemy->IsCollisionDisabled()) {
-			continue;	//コリジョン無効の敵はスキップ
+			continue; // コリジョン無効の敵はスキップ
 		}
 
-		//敵弾の座標
+		// 敵弾の座標
 		AABB enemyAABB = enemy->GetAABB();
 
-		//AABB同士の交差判定
+		// AABB同士の交差判定
 		if (IsCollision(playerAABB, enemyAABB)) {
 
-			//自キャラの衝突時間判定関数を呼び出す
+			// 自キャラの衝突時間判定関数を呼び出す
 			player_->OnCollision(enemy);
 
 			// 敵の衝突判定時間関数を呼び出す

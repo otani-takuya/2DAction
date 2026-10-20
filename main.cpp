@@ -86,13 +86,13 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	// ==============================
 	// Debugではゲームシーンから開始
 	// ==============================
-	scene = Scene::kGame;
+	scene = Scene::kTitle;
 
-	// ゲームシーンを生成
-	gameScene = new GameScene();
+	// タイトルシーンを生成
+	titleScene = new TitleScene();
 
-	// ゲームシーンを初期化
-	gameScene->Initialize(stageManager);
+	// タイトルシーンを初期化
+	titleScene->Initialize();
 
 #else
 

@@ -2,6 +2,9 @@
 #include "player.h"
 #include <algorithm>
 #include "math.h"
+#ifdef USE_IMGUI
+#include <imgui.h>
+#endif
 
 #undef min
 #undef max
@@ -30,10 +33,15 @@ void CameraController::Update() {
 	camera_->translation_.y = std::min(camera_->translation_.y, playerWorldTransform->translation_.y + kCameraMovableArea.top);
 
 
-	// カメラ移動範囲の制限
-	camera_->translation_.x = std::clamp(camera_->translation_.x, movableArea_.left, movableArea_.right);
-	camera_->translation_.y = std::clamp(camera_->translation_.y, movableArea_.bottom, movableArea_.top);
-	
+	// ==============================
+	// カメラの移動範囲制限
+	// ==============================
+	if (isCameraLimitEnabled_) {
+
+		camera_->translation_.x = std::clamp(camera_->translation_.x, movableArea_.left, movableArea_.right);
+
+		camera_->translation_.y = std::clamp(camera_->translation_.y, movableArea_.bottom, movableArea_.top);
+	}
 
 	camera_->UpdateMatrix();
 }
@@ -46,4 +54,51 @@ void CameraController::Reset() {
 	camera_->translation_.z = playerWorldTransform->translation_.z + targetoffset_.z;
 
 	camera_->UpdateMatrix();
+}
+
+// ==============================
+// カメラ調整用ImGui
+// ==============================
+void CameraController::DrawImGui() {
+
+#ifdef USE_IMGUI
+
+	ImGui::Begin("Camera Controller");
+
+	// カメラの追従位置を調整
+	ImGui::Text("Camera Offset");
+
+	ImGui::DragFloat3("Offset XYZ", &targetoffset_.x, 0.1f);
+
+	// ==============================
+	// カメラの移動可能範囲を確認
+	// ==============================
+	ImGui::Separator();
+
+	ImGui::Text("Camera Movable Area");
+
+	ImGui::Text("X: %.2f ~ %.2f", movableArea_.left, movableArea_.right);
+
+	ImGui::Text("Y: %.2f ~ %.2f", movableArea_.bottom, movableArea_.top);
+
+	// 追従カメラの現在座標を表示
+	if (camera_) {
+
+		ImGui::Text("Camera Position: %.2f, %.2f, %.2f", camera_->translation_.x, camera_->translation_.y, camera_->translation_.z);
+	}
+
+	// Playerの座標を表示
+	if (target_) {
+
+		const auto* transform = target_->GetWorldTransform();
+
+		ImGui::Text("Player Position: %.2f, %.2f, %.2f", transform->translation_.x, transform->translation_.y, transform->translation_.z);
+	}
+
+	// カメラの移動制限ON/OFF
+	ImGui::Checkbox("Enable Camera Limit", &isCameraLimitEnabled_);
+
+	ImGui::End();
+
+#endif
 }

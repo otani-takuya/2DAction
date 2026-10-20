@@ -3,20 +3,19 @@
 // ==============================
 // インクルード
 // ==============================
-#include "KamataEngine.h"
-#include "Player.h"
+#include "BaseEffect.h"
 #include "BaseEnemy.h"
-#include "Enemy.h"
-#include "ShieldEnemy.h"
-#include "Skydome.h"
-#include "MapChipField.h"
 #include "CameraController.h"
 #include "DeathParticles.h"
+#include "Enemy.h"
 #include "Fade.h"
-#include "HitEffect.h"
-#include "BaseEffect.h"
 #include "GuardEffect.h"
-
+#include "HitEffect.h"
+#include "KamataEngine.h"
+#include "MapChipField.h"
+#include "Player.h"
+#include "ShieldEnemy.h"
+#include "Skydome.h"
 
 // ==============================
 // ゲームシーンクラス
@@ -57,7 +56,7 @@ public:
 
 	void GenerateFieldObjects();
 
-	//全ての当たり判定を行う
+	// 全ての当たり判定を行う
 	void CheckAllCollisions();
 
 	void ChangePhase();
@@ -73,7 +72,6 @@ public:
 	/// ※ポインタ管理のため解放漏れに注意
 	/// </summary>
 	std::vector<std::vector<KamataEngine::WorldTransform*>> worldTransformBlocks_;
-
 
 	// 敵をポインタリストに
 	std::list<BaseEnemy*> enemies_;
@@ -124,8 +122,33 @@ private:
 	// スカイドーム用モデル
 	KamataEngine::Model* modelSkydome_ = nullptr;
 
-	// プレイヤーモデル
+	// プレイヤーモデル（従来のモデル）
 	KamataEngine::Model* playerModel_ = nullptr;
+
+	// ==============================
+	// Player分割パーツモデル
+	// ==============================
+
+	// 胴体
+	KamataEngine::Model* playerBodyModel_ = nullptr;
+
+	// 頭
+	KamataEngine::Model* playerHeadModel_ = nullptr;
+
+	// 左手
+	KamataEngine::Model* playerLeftHandModel_ = nullptr;
+
+	// 右手
+	KamataEngine::Model* playerRightHandModel_ = nullptr;
+
+	// 左足
+	KamataEngine::Model* playerLeftFootModel_ = nullptr;
+
+	// 右足
+	KamataEngine::Model* playerRightFootModel_ = nullptr;
+
+	// 武器
+	KamataEngine::Model* playerWeaponModel_ = nullptr;
 
 	// アタックモデル
 	KamataEngine::Model* attackModel_ = nullptr;
@@ -135,7 +158,7 @@ private:
 
 	KamataEngine::Model* shieldEnemyModel_ = nullptr;
 
-	//やられパーティクル
+	// やられパーティクル
 	KamataEngine::Model* deathParticlesModel_ = nullptr;
 
 	// ヒットエフェクト
@@ -157,8 +180,6 @@ private:
 	// デバッグカメラが有効かどうか
 	bool isDebugCameraActive_ = false;
 
-
-
 	CameraController* cameraController_ = nullptr;
 
 	// ==============================
@@ -174,7 +195,7 @@ private:
 	// ==============================
 	// エネミー
 	// ==============================
-	//Enemy* enemy_ = nullptr;
+	// Enemy* enemy_ = nullptr;
 
 	// ==============================
 	// やられパーティクル
@@ -186,12 +207,10 @@ private:
 	// ==============================
 	Skydome* skydome_ = nullptr;
 
-
 	// ==============================
 	// マップチップフィールド
 	// ==============================
-	MapChipField *mapChipField_;
-
+	MapChipField* mapChipField_;
 
 	// 終了フラグ
 	bool finished_ = false;
@@ -202,10 +221,8 @@ private:
 	// フェード時間
 	const float kFadeDuration = 1.0f;
 
-
 	// リロード要求フラグ
 	bool reloadRequested_ = false;
 
 	StageManager* stageManager_ = nullptr;
-
 };

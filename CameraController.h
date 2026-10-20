@@ -29,6 +29,11 @@ public:
 
 	void SetMovableArea(const Rect& area) { movableArea_ = area; }
 
+	// ==============================
+	// ImGuiでカメラを調整
+	// ==============================
+	void DrawImGui();
+
 
 private:
 	//カメラ
@@ -38,10 +43,20 @@ private:
 	Player* target_ = nullptr;
 
 	//オフセット
-	KamataEngine::Vector3 targetoffset_ = {0.0f, 0.0f, -20.0f};
+	//  カメラの初期オフセット
+	KamataEngine::Vector3 targetoffset_ = {
+	    2.0f, // X：Playerより右側
+	    2.0f, // Y：Playerより上側
+	    -8.0f // Z：Playerからの距離
+	};
 
-	//カメラ移動範囲
-	Rect movableArea_ = {0.0f, 100.0f, 0.0f, 100.0f};
+	// カメラ移動範囲
+	Rect movableArea_ = {
+	    -100.0f, // X座標の最小値
+	    100.0f,  // X座標の最大値
+	    -100.0f, // Y座標の最小値
+	    100.0f   // Y座標の最大値
+	};
 
 	//カメラ目標座標
 	KamataEngine::Vector3 cameraTargetPosition_ = {};
@@ -56,7 +71,10 @@ private:
 	static inline const Rect kCameraMovableArea = {
 	    .left = -14.0f,
 	    .right = 85.0f,
-	    .bottom = -8.0f,
-	    .top = 11.0f,
+	    .bottom = -100.0f,
+	    .top = 100.0f,
 	};
+
+	// カメラの移動範囲制限を使用するか
+	bool isCameraLimitEnabled_ = true;
 };
