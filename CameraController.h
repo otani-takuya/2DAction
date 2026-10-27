@@ -43,11 +43,14 @@ private:
 	Player* target_ = nullptr;
 
 	//オフセット
-	//  カメラの初期オフセット
+	//  ========================================
+	// プレイヤーに対するカメラの位置
+	// ========================================
 	KamataEngine::Vector3 targetoffset_ = {
-	    2.0f, // X：Playerより右側
-	    2.0f, // Y：Playerより上側
-	    -8.0f // Z：Playerからの距離
+
+	    2.0f,  // X：プレイヤーを画面左に配置
+	    3.5f,  // Y：プレイヤーより少し上
+	    -12.0f // Z：カメラとプレイヤーの距離
 	};
 
 	// カメラ移動範囲
@@ -61,11 +64,15 @@ private:
 	//カメラ目標座標
 	KamataEngine::Vector3 cameraTargetPosition_ = {};
 
-	//座標保管割合
-	static inline const float kInterpolationRate = 0.1f;
+	// ========================================
+	// カメラ追従パラメータ
+	// ========================================
 
-	//速度掛け率
-	static inline const float kVelocityBias = 30.0f;
+	// 追従の補間率
+	static inline const float kInterpolationRate = 0.05f;
+
+	// 移動速度による先読み補正
+	static inline const float kVelocityBias = 0.0f;
 
 	//追従対象の各方向へのカメラ移動範囲
 	static inline const Rect kCameraMovableArea = {

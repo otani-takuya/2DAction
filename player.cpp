@@ -5,6 +5,7 @@
 #include "BaseEnemy.h"
 #include "math.h"
 #include <cassert>
+#include <cmath>
 
 #include <numbers>
 
@@ -115,6 +116,11 @@ void Player::Initialize(const PlayerModels& models, Model* modelAttack, Camera* 
 	// 親子関係の設定に失敗していないか確認
 	assert(isWeaponParentSet);
 
+	// ========================================
+	// アニメーション管理クラスを初期化
+	// ========================================
+	animationController_.Initialize(&characterParts_);
+
 	// 初回の行列更新
 	characterParts_.Update();
 
@@ -220,15 +226,78 @@ void Player::Update() {
 		break;
 	}
 
-	// ==============================
-	// CharacterPartsの行列更新
-	// ==============================
-
-	// Player本体の行列を最新状態にする
+	// ========================================
+	// Player全体のワールド行列更新
+	// ========================================
 	UpdateWorldTransform(worldTransform_);
 
-	// 全パーツをPlayerの位置に追従させる
+	// ========================================
+	// Playerの移動状態を判定
+	// ========================================
+
+	// PlayerMovementから移動速度を取得
+	const KamataEngine::Vector3& velocity = movement_.GetVelocity();
+
+	// ========================================
+	// AnimationControllerへ移動速度を渡す
+	// ========================================
+	animationController_.SetMovementSpeed(velocity.x);
+
+	// X方向の移動速度
+	const float velocityX = velocity.x;
+
+	// 左右に移動しているか判定
+	constexpr float kMoveThreshold = 0.01f;
+
+	const bool isMoving = std::abs(velocityX) > kMoveThreshold;
+
+	const bool isGrounded = movement_.IsGrounded();
+
+	// ========================================
+	// AnimationControllerへ情報を渡す
+	// ========================================
+
+	animationController_.SetMovementSpeed(velocity.x);
+
+	animationController_.SetJumpInfo(isGrounded, velocity.y);
+
+	// ========================================
+	// Idle / Walk / Jumpの状態切り替え
+	// ========================================
+
+	if (behavior_ == Behavior::kRoot) {
+
+		if (!isGrounded) {
+
+			// 空中ではJumpを優先
+			animationController_.SetAnimationState(PlayerAnimationController::AnimationState::kJump);
+
+		} else if (isMoving) {
+
+			// 接地中かつ移動中はWalk
+			animationController_.SetAnimationState(PlayerAnimationController::AnimationState::kWalk);
+
+		} else {
+
+			// 接地中かつ停止中はIdle
+			animationController_.SetAnimationState(PlayerAnimationController::AnimationState::kIdle);
+		}
+	}
+
+	// ========================================
+	// アニメーション更新
+	// ========================================
+
+	// 60FPSを基準とした固定時間
+	constexpr float kDeltaTime = 1.0f / 60.0f;
+
+	animationController_.Update(kDeltaTime);
+
+	// ========================================
+	// 各パーツのワールド行列更新
+	// ========================================
 	characterParts_.Update();
+
 }
 
 // ==============================

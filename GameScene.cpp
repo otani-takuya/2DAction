@@ -266,15 +266,23 @@ void GameScene::Initialize(StageManager* stageManager) {
 	cameraController_->Initialize(&camera_);
 	cameraController_->Settarget(player_);
 
-	// 移動範囲の指定
+// ========================================
+	// カメラの移動可能範囲
+	// ========================================
 	CameraController::Rect movableArea = {
-	    .left = 14.0f,
-	    .right = 85.0f,
-	    .bottom = 8.0f,
-	    .top = 11.0f,
+
+	    // X方向
+	    .left = -100.0f,
+	    .right = 100.0f,
+
+	    // Y方向
+	    .bottom = -10.0f,
+	    .top = 20.0f,
 	};
 
 	cameraController_->SetMovableArea(movableArea);
+
+	// プレイヤーの初期位置へカメラを移動
 	cameraController_->Reset();
 
 	// 初期カメラを反映
@@ -455,6 +463,11 @@ void GameScene::Update() {
 		// ==============================
 		if (player_) {
 			player_->DrawPartsImGui();
+		}
+
+		// Playerのアニメーション調整画面
+		if (player_ != nullptr) {
+			player_->DrawAnimationImGui();
 		}
 
 #endif

@@ -20,7 +20,9 @@ void CameraController::Update() {
 	const KamataEngine::WorldTransform* playerWorldTransform = target_->GetWorldTransform();
 	//追従対象とオフセットと追従対象の速度からカメラの目標座標を計算
 	cameraTargetPosition_.x = playerWorldTransform->translation_.x + targetoffset_.x + target_->GetVelocity().x * kVelocityBias;
-	cameraTargetPosition_.y = playerWorldTransform->translation_.y + targetoffset_.y + target_->GetVelocity().y * kVelocityBias;
+	// Y方向はプレイヤーの位置を基準に追従
+	// ジャンプ速度による大きなカメラ移動を防ぐ
+	cameraTargetPosition_.y = playerWorldTransform->translation_.y + targetoffset_.y;
 	cameraTargetPosition_.z = playerWorldTransform->translation_.z + targetoffset_.z + target_->GetVelocity().z * kVelocityBias;
 
 	//座標保管によりゆったり追従
@@ -46,13 +48,46 @@ void CameraController::Update() {
 	camera_->UpdateMatrix();
 }
 
-void CameraController::Reset() { 
-	const KamataEngine::WorldTransform* playerWorldTransform = target_->GetWorldTransform(); 
-	
-	camera_->translation_.x = playerWorldTransform->translation_.x + targetoffset_.x;
-	camera_->translation_.y = playerWorldTransform->translation_.y + targetoffset_.y;
-	camera_->translation_.z = playerWorldTransform->translation_.z + targetoffset_.z;
+// ========================================
+// カメラ位置のリセット
+// ========================================
+void CameraController::Reset() {
 
+	if (camera_ == nullptr || target_ == nullptr) {
+		return;
+	}
+
+	// プレイヤーのワールド座標を取得
+	const KamataEngine::WorldTransform* playerWorldTransform = target_->GetWorldTransform();
+
+	// ========================================
+	// プレイヤーの位置からカメラ位置を計算
+	// ========================================
+
+	cameraTargetPosition_.x = playerWorldTransform->translation_.x + targetoffset_.x;
+
+	cameraTargetPosition_.y = playerWorldTransform->translation_.y + targetoffset_.y;
+
+	cameraTargetPosition_.z = playerWorldTransform->translation_.z + targetoffset_.z;
+
+	// ========================================
+	// カメラの移動制限
+	// ========================================
+
+	if (isCameraLimitEnabled_) {
+
+		cameraTargetPosition_.x = std::clamp(cameraTargetPosition_.x, movableArea_.left, movableArea_.right);
+
+		cameraTargetPosition_.y = std::clamp(cameraTargetPosition_.y, movableArea_.bottom, movableArea_.top);
+	}
+
+	// ========================================
+	// 初期位置へ即座に移動
+	// ========================================
+
+	camera_->translation_ = cameraTargetPosition_;
+
+	// カメラ行列を更新
 	camera_->UpdateMatrix();
 }
 

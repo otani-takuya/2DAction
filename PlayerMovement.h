@@ -144,13 +144,18 @@ private:
 	bool onGrounded_ = true;
 
 private:
-	// ==============================
-	// 移動パラメータ
-	// ==============================
+	// ========================================
+	// プレイヤーの移動パラメータ
+	// ========================================
 
-	static constexpr float kAcceleration = 0.01f;
-	static constexpr float kAttenuation = 0.05f;
-	static constexpr float kLimitRunSpeed = 0.5f;
+	// 加速度
+	static constexpr float kAcceleration = 0.005f;
+
+	// 減速率
+	static constexpr float kAttenuation = 0.10f;
+
+	// 最高移動速度
+	static constexpr float kLimitRunSpeed = 0.15f;
 
 	static constexpr float kTimeTurn = 0.3f;
 

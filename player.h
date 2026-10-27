@@ -6,6 +6,7 @@
 #include "PlayerCombat.h"
 #include "PlayerMovement.h"
 #include "CharacterParts.h"
+#include "PlayerAnimationController.h"
 
 class BaseEnemy;
 
@@ -88,6 +89,16 @@ public:
 	// ==============================
 
 	void RequestKnockback(const KamataEngine::Vector3& direction);
+
+	// ========================================
+	// アニメーション設定のImGui表示
+	// ========================================
+	void DrawAnimationImGui() {
+
+#ifdef USE_IMGUI
+		animationController_.DrawImGui();
+#endif
+	}
 
 private:
 	// ==============================
@@ -179,4 +190,11 @@ private:
 	static inline constexpr float kKnockbackDuration = 0.25f;
 
 	static inline constexpr float kKnockbackSpeed = 0.5f;
+
+	// ========================================
+	// Playerのアニメーション管理
+	// ========================================
+	PlayerAnimationController animationController_;
+
+
 };

@@ -75,6 +75,11 @@ public:
 	// ==============================
 	void DrawImGui();
 
+	// ========================================
+	// 全パーツを取得
+	// ========================================
+	const std::unordered_map<std::string, Part>& GetParts() const { return parts_; }
+
 private:
 	std::unordered_map<std::string, Part> parts_;
 
